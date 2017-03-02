@@ -5,6 +5,6 @@ __pycache__/
 /html/
 /scripts/*.dll
 /scripts/*.so
-/msvc/
+/msvc/*
 !/msvc/libssvd.vcxproj
 /doc/
