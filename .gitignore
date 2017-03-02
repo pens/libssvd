@@ -1,0 +1,10 @@
+*.csv
+*.pyc
+__pycache__/
+/bin/
+/html/
+/scripts/*.dll
+/scripts/*.so
+/msvc/
+!/msvc/libssvd.vcxproj
+/doc/
