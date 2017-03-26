@@ -2,7 +2,7 @@
 all: lib
 
 SRC = ../src/*.cc
-INC = -I../include -I/usr/local/magma/include -I/usr/local/cuda/include
+INC = -I../include -I../src -I/usr/local/magma/include -I/usr/local/cuda/include
 
 FLAGS = -std=c++1y -g -pthread -O3 -march=native -pipe
 LIB = -lblas -llapack -llapacke -L/usr/local/magma/lib -lmagma
