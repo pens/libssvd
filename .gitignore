@@ -2,6 +2,7 @@
 *.pyc
 __pycache__/
 /bin/
+/lib/
 /html/
 /scripts/*.dll
 /scripts/*.so
