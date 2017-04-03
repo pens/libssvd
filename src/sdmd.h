@@ -10,7 +10,7 @@ class Sdmd {
  public:
   virtual ~Sdmd(){};
   virtual int Run(const float *x, int x_n, bool stream, float *lambda,
-                  float *phi, double *elapsed = nullptr) = 0;
+                  float *phi, double *elapsed = nullptr, int k_sigma = 0) = 0;
 };
 
 class SdmdCpu : public Sdmd {
@@ -18,7 +18,7 @@ class SdmdCpu : public Sdmd {
   SdmdCpu(int m, int n);
   virtual ~SdmdCpu(){};
   virtual int Run(const float *x, int n, bool stream, float *lambda, float *phi,
-                  double *elapsed = nullptr) override;
+                  double *elapsed = nullptr, int k_sigma = 0) override;
   const float *GetSigma() const { return sigma.data(); }
   const float *GetV() const { return v.data(); }
   const float *GetW() const { return w.data(); }
@@ -35,7 +35,7 @@ class SdmdMagma : public Sdmd {
   SdmdMagma(int m, int n);
   virtual ~SdmdMagma();
   virtual int Run(const float *x, int n, bool stream, float *lambda, float *phi,
-                  double *elapsed = nullptr) override;
+                  double *elapsed = nullptr, int k_sigma = 0) override;
   magma_queue_t GetQueue() const { return queue; }
   magmaFloat_ptr GetDSigmaInv() const { return dSigma_inv; }
   magmaFloat_ptr GetDV() const { return dV; }

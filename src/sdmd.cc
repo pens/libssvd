@@ -28,7 +28,7 @@ SdmdCpu::SdmdCpu(int m, int n)
       sigma_inv_mat(k * k) {}
 
 int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
-                 float *phi, double *elapsed) {
+                 float *phi, double *elapsed, int k_sigma) {
   int res = svd.Run(x, x_n, stream, sigma.data(), v.data(), elapsed);
   if (res) return -1;
 
@@ -41,7 +41,9 @@ int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
     cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 1, m, 1.0f, x, m,
                 x + m * k, m, 0.0f, xy.data() + k * (k - 1), k);
   }
-  for (auto i = 0; i < k; ++i) sigma_inv_mat[i * n] = 1.0f / sigma[i];
+
+  auto num_sigma = (k_sigma > 0) ? min(k, k_sigma) : k;
+  for (auto i = 0; i < num_sigma; ++i) sigma_inv_mat[i * n] = 1.0f / sigma[i];
 
   cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, k, k, 1.0f,
               v.data(), k, sigma_inv_mat.data(), k, 0.0f, vs.data(), k);
@@ -112,7 +114,7 @@ SdmdMagma::~SdmdMagma() {
 }
 
 int SdmdMagma::Run(const float *x, int x_n, bool stream, float *lambda,
-                   float *phi, double *elapsed) {
+                   float *phi, double *elapsed, int k_sigma) {
   int res = svd.Run(x, x_n, stream, sigma.data(), v.data(), elapsed);
   if (res) return -1;
 
@@ -124,7 +126,8 @@ int SdmdMagma::Run(const float *x, int x_n, bool stream, float *lambda,
   time += magma_sync_wtime(queue);
 
   auto time_cpu = high_resolution_clock::now();
-  for (auto i = 0; i < k; ++i) sigma_inv[i] = 1.0f / sigma[i];
+  auto num_sigma = (k_sigma > 0) ? min(k, k_sigma) : k;
+  for (auto i = 0; i < num_sigma; ++i) sigma_inv[i] = 1.0f / sigma[i];
   time +=
       duration_cast<duration<double>>(high_resolution_clock::now() - time_cpu)
           .count();
