@@ -126,8 +126,11 @@ int SdmdMagma::Run(const float *x, int x_n, bool stream, float *lambda,
   time += magma_sync_wtime(queue);
 
   auto time_cpu = high_resolution_clock::now();
+
   auto num_sigma = (k_sigma > 0) ? min(k, k_sigma) : k;
-  for (auto i = 0; i < num_sigma; ++i) sigma_inv[i] = 1.0f / sigma[i];
+  for (auto i = 0; i < num_sigma; ++i)
+      sigma_inv[i] = 1.0f / sigma[i];
+
   time +=
       duration_cast<duration<double>>(high_resolution_clock::now() - time_cpu)
           .count();
