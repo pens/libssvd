@@ -9,11 +9,11 @@ using namespace std;
 using namespace chrono;
 using namespace ssvd;
 
-SdmdCpu::SdmdCpu(int m, int n)
+SdmdCpu::SdmdCpu(int m, int n, int k)
     : m(m),
       n(n),
-      k(n - 1),
-      svd(m, n - 1),
+      k(k),
+      svd(m, n - 1, k),
       sigma(k),
       v(k * k),
       w(k * k),
@@ -75,11 +75,11 @@ int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
   return 0;
 }
 
-SdmdMagma::SdmdMagma(int m, int n)
+SdmdMagma::SdmdMagma(int m, int n, int k)
     : m(m),
       n(n),
-      k(n - 1),
-      svd(m, k, n),
+      k(k),
+      svd(m, k, k, n),
       sigma(k),
       v(k * k),
       w(k * k),

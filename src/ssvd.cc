@@ -9,7 +9,7 @@ using namespace std;
 using namespace chrono;
 using namespace ssvd;
 
-SsvdCpu::SsvdCpu(int m, int n)
+SsvdCpu::SsvdCpu(int m, int n, int k)
     : m(m), n(n), xx(n * n), v(n * n), sigma(n), isuppz(2 * n) {}
 
 int SsvdCpu::Run(const float *x, int x_n, bool stream, float *sigma, float *v,
@@ -45,7 +45,7 @@ int SsvdCpu::Run(const float *x, int x_n, bool stream, float *sigma, float *v,
   return 0;
 }
 
-SsvdMagma::SsvdMagma(int m, int n, int n_full)
+SsvdMagma::SsvdMagma(int m, int n, int k, int n_full)
     : m(m), n(n), n_full(n_full), sigma(n), wA(n * n) {
   magma_init();
   magma_queue_create(0, &queue);
