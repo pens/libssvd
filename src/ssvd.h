@@ -16,21 +16,21 @@ class Ssvd {
 
 class SsvdCpu : public Ssvd {
  public:
-  SsvdCpu(int m, int n, int k);
+  SsvdCpu(int m, int n, int k = 0);
   virtual ~SsvdCpu(){};
   virtual int Run(const float *x, int n, bool stream, float *sigma, float *v,
                   double *elapsed = nullptr) override;
   const float *GetXX() const { return xx.data(); }
 
  protected:
-  int m, n;
-  std::vector<float> xx, v, sigma;
+  int m, n, k;
+  std::vector<float> xx, xx_temp, sigma;
   std::vector<int> isuppz;
 };
 
 class SsvdMagma : public Ssvd {
  public:
-  SsvdMagma(int m, int n, int k, int n_full = 0);
+  SsvdMagma(int m, int n, int k = 0, int n_full = 0);
   virtual ~SsvdMagma();
   virtual int Run(const float *x, int n, bool stream, float *sigma, float *v,
                   double *elapsed = nullptr) override;
@@ -39,10 +39,10 @@ class SsvdMagma : public Ssvd {
   magmaFloat_ptr GetDXX() const { return dXX; }
 
  protected:
-  int m, n, n_full;
+  int m, n, k, n_full;
   magma_queue_t queue;
-  magmaFloat_ptr dX, dXX, dV;
-  std::vector<float> sigma, wA, work;
+  magmaFloat_ptr dX, dXX, dXX_dV;
+  std::vector<float> wA, work, sigma_temp;
   std::vector<int> iwork;
 };
 }
