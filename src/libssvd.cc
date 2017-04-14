@@ -14,12 +14,12 @@ unique_ptr<Sdmd> dmd;
 }
 double last_time;
 
-int SVD(const float *x, int m, int n, int k, bool gpu, bool streaming, float *sigma,
+int SVD(const float *x, int m, int n, bool gpu, bool streaming, float *sigma,
         float *v) {
   if (gpu)
-    svd = make_unique<SsvdMagma>(m, n, k);
+    svd = make_unique<SsvdMagma>(m, n);
   else
-    svd = make_unique<SsvdCpu>(m, n, k);
+    svd = make_unique<SsvdCpu>(m, n);
 
   int res = svd->Run(x, n, false, sigma, v, &last_time);
 
@@ -34,12 +34,12 @@ int SVDUpdate(const float *x_new, int n_new, float *sigma, float *v) {
 
 void SVDStop() { svd.release(); }
 
-int DMD(const float *x, int m, int n, int k, bool gpu, bool streaming, float *lambda,
+int DMD(const float *x, int m, int n, bool gpu, bool streaming, float *lambda,
         float *phi) {
   if (gpu)
-    dmd = make_unique<SdmdMagma>(m, n, k);
+    dmd = make_unique<SdmdMagma>(m, n);
   else
-    dmd = make_unique<SdmdCpu>(m, n, k);
+    dmd = make_unique<SdmdCpu>(m, n);
 
   int res = dmd->Run(x, n, false, lambda, phi, &last_time);
 

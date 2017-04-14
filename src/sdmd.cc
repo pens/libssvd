@@ -15,16 +15,16 @@ SdmdCpu::SdmdCpu(int m, int n, int k)
       k(k),
       svd(m, n - 1, k),
       sigma(k),
-      v(k * k),
+      v((n - 1) * k),
       w(k * k),
       lambda_real(k),
       lambda_imag(k),
       phi(m * k),
-      xy(k * k),
-      vs(k * k),
-      uy(k * k),
+      xy((n - 1) * (n - 1)),
+      vs((n - 1) * k),
+      uy(k * (n - 1)),
       a(k * k),
-      vsw(k * k),
+      vsw((n - 1) * k),
       sigma_inv_mat(k * k) {}
 
 int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
@@ -33,27 +33,20 @@ int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
   if (res) return -1;
 
   auto start = high_resolution_clock::now();
-  if (!stream) {
-    cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, k, m, 1.0f, x, m,
-                x + m, m, 0.0f, xy.data(), k);
+  if (!stream) {//TODO remove
+    cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, n - 1, n - 1, m, 1.0f, x, m, x + m, m, 0.0f, xy.data(), n - 1);
   } else {
-    memmove(xy.data(), svd.GetXX() + k, k * (k - 1) * sizeof(float));
-    cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, 1, m, 1.0f, x, m,
-                x + m * k, m, 0.0f, xy.data() + k * (k - 1), k);
+    memmove(xy.data(), svd.GetXX() + n - 1, (n - 1) * (n - 1 - 1) * sizeof(float));
+    cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, n - 1, 1, m, 1.0f, x, m, x + m * (n - 1), m, 0.0f, xy.data() + (n - 1) * (n - 1 - 1), n - 1);
   }
 
-  for (auto i = 0; i < k; ++i) sigma_inv_mat[i * n] = 1.0f / sigma[i];
+  for (auto i = 0; i < k; ++i) sigma_inv_mat[i * (k + 1)] = 1.0f / sigma[i];
 
-  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, k, k, 1.0f,
-              v.data(), k, sigma_inv_mat.data(), k, 0.0f, vs.data(), k);
-  cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, k, k, 1.0f, vs.data(),
-              k, xy.data(), k, 0.0f, uy.data(), k);
-  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, k, k, 1.0f,
-              uy.data(), k, vs.data(), k, 0.0f, a.data(), k);
+  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n - 1, k, k, 1.0f, v.data(), n - 1, sigma_inv_mat.data(), k, 0.0f, vs.data(), n - 1);
+  cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, n - 1, n - 1, 1.0f, vs.data(), n - 1, xy.data(), n - 1, 0.0f, uy.data(), k);
+  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, k, n - 1, 1.0f, uy.data(), k, vs.data(), n - 1, 0.0f, a.data(), k);
 
-  res = LAPACKE_sgeev(LAPACK_COL_MAJOR, 'N', 'V', k, a.data(), k,
-                      lambda_real.data(), lambda_imag.data(), nullptr, 1,
-                      w.data(), k);
+  res = LAPACKE_sgeev(LAPACK_COL_MAJOR, 'N', 'V', k, a.data(), k, lambda_real.data(), lambda_imag.data(), nullptr, 1, w.data(), k);
   if (res) return -1;
 
   auto time = high_resolution_clock::now() - start;
@@ -63,14 +56,10 @@ int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
   }
   start = high_resolution_clock::now();
 
-  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, k, k, k, 1.0f,
-              vs.data(), k, w.data(), k, 0.0f, vsw.data(), k);
-  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, k, k, 1.0f, &x[m],
-              m, vsw.data(), k, 0.0f, phi, m);
+  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n - 1, k, k, 1.0f, vs.data(), n - 1, w.data(), k, 0.0f, vsw.data(), n - 1);
+  cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, k, n - 1, 1.0f, &x[m], m, vsw.data(), n - 1, 0.0f, phi, m);
   if (elapsed)
-    *elapsed += duration_cast<duration<double>>(high_resolution_clock::now() -
-                                                start + time)
-                    .count();
+    *elapsed += duration_cast<duration<double>>(high_resolution_clock::now() - start + time).count();
 
   return 0;
 }
@@ -79,9 +68,9 @@ SdmdMagma::SdmdMagma(int m, int n, int k)
     : m(m),
       n(n),
       k(k),
-      svd(m, k, k, n),
+      svd(m, n - 1, k, n),
       sigma(k),
-      v(k * k),
+      v((n - 1) * k),
       w(k * k),
       lambda_real(k),
       lambda_imag(k),
@@ -89,15 +78,16 @@ SdmdMagma::SdmdMagma(int m, int n, int k)
       sigma_inv(k),
       queue(svd.GetQueue()),
       dX(svd.GetDX()) {
-  magma_smalloc(&dXY, k * k);
+  magma_smalloc(&dXY, (n - 1) * (n - 1));
   magma_smalloc(&dSigma_inv, k * k);
-  magma_smalloc(&dVS, k * k);
-  magma_smalloc(&dUY, k * k);
+  magma_smalloc(&dVS, (n - 1) * k);
+  magma_smalloc(&dUY, k * (n - 1));
   magma_smalloc(&dA, k * k);
   magma_smalloc(&dW, k * k);
-  magma_smalloc(&dVSW, k * k);
+  magma_smalloc(&dVSW, (n - 1) * k);
   magma_smalloc(&dPhi, m * k);
-  magma_smalloc(&dV, k * k);
+  //TODO reuse from SVD?
+  magma_smalloc(&dV, (n - 1) * k);
 }
 
 SdmdMagma::~SdmdMagma() {
@@ -119,9 +109,8 @@ int SdmdMagma::Run(const float *x, int x_n, bool stream, float *lambda,
 
   real_Double_t time = 0.0;
   time -= magma_sync_wtime(queue);
-  magma_scopyvector(k * (k - 1), svd.GetDXX() + k, 1, dXY, 1, queue);
-  magma_sgemm(MagmaTrans, MagmaNoTrans, k, 1, m, 1.0f, dX, m, dX + m * k, m,
-              0.0f, dXY + k * (k - 1), k, queue);
+  magma_scopyvector((n - 1) * (n - 1 - 1), svd.GetDXX() + (n - 1), 1, dXY, 1, queue);
+  magma_sgemm(MagmaTrans, MagmaNoTrans, n - 1, 1, m, 1.0f, dX, m, dX + m * (n - 1), m, 0.0f, dXY + (n - 1) * (n - 1 - 1), n - 1, queue);
   time += magma_sync_wtime(queue);
 
   auto time_cpu = high_resolution_clock::now();
@@ -129,34 +118,23 @@ int SdmdMagma::Run(const float *x, int x_n, bool stream, float *lambda,
   for (auto i = 0; i < k; ++i)
       sigma_inv[i] = 1.0f / sigma[i];
 
-  time +=
-      duration_cast<duration<double>>(high_resolution_clock::now() - time_cpu)
-          .count();
+  time += duration_cast<duration<double>>(high_resolution_clock::now() - time_cpu).count();
 
-  magma_ssetmatrix(k, k, v.data(), k, dV, k, queue);
+  magma_ssetmatrix(n - 1, k, v.data(), n - 1, dV, n - 1, queue);
   magmablas_slaset(MagmaFull, k, k, 0.0f, 0.0f, dSigma_inv, k, queue);
   magma_ssetvector(k, sigma_inv.data(), 1, dSigma_inv, k + 1, queue);
 
   time -= magma_sync_wtime(queue);
-  magma_sgemm(MagmaNoTrans, MagmaNoTrans, k, k, k, 1., dV, k, dSigma_inv, k, 0.,
-              dVS, k, queue);
-  magma_sgemm(MagmaTrans, MagmaNoTrans, k, k, k, 1., dVS, k, dXY, k, 0., dUY, k,
-              queue);
-  magma_sgemm(MagmaNoTrans, MagmaNoTrans, k, k, k, 1., dUY, k, dVS, k, 0., dA,
-              k, queue);
+  magma_sgemm(MagmaNoTrans, MagmaNoTrans, n - 1, k, k, 1., dV, n - 1, dSigma_inv, k, 0., dVS, n - 1, queue);
+  magma_sgemm(MagmaTrans, MagmaNoTrans, k, n - 1, n - 1, 1., dVS, n - 1, dXY, n - 1, 0., dUY, k, queue);
+  magma_sgemm(MagmaNoTrans, MagmaNoTrans, k, k, n - 1, 1., dUY, k, dVS, n - 1, 0., dA, k, queue);
   time += magma_sync_wtime(queue);
 
   magma_sgetmatrix(k, k, dA, k, a.data(), k, queue);
 
   time_cpu = high_resolution_clock::now();
-  // MAGMA version causes OpenMP warnings on Windows. Will use CPU at this
-  // size anyway
-  res = LAPACKE_sgeev(LAPACK_COL_MAJOR, 'N', 'V', k, a.data(), k,
-                      lambda_real.data(), lambda_imag.data(), nullptr, 1,
-                      w.data(), k);
-  time +=
-      duration_cast<duration<double>>(high_resolution_clock::now() - time_cpu)
-          .count();
+  res = LAPACKE_sgeev(LAPACK_COL_MAJOR, 'N', 'V', k, a.data(), k, lambda_real.data(), lambda_imag.data(), nullptr, 1, w.data(), k);
+  time += duration_cast<duration<double>>(high_resolution_clock::now() - time_cpu).count();
   if (res) return -1;
 
   for (int i = 0; i < k; ++i) {
@@ -167,10 +145,8 @@ int SdmdMagma::Run(const float *x, int x_n, bool stream, float *lambda,
   magma_ssetmatrix(k, k, w.data(), k, dW, k, queue);
 
   time -= magma_sync_wtime(queue);
-  magma_sgemm(MagmaNoTrans, MagmaNoTrans, k, k, k, 1.0f, dVS, k, dW, k, 0.0f,
-              dVSW, k, queue);
-  magma_sgemm(MagmaNoTrans, MagmaNoTrans, m, k, k, 1.0f, dX + m, m, dVSW, k,
-              0.0f, dPhi, m, queue);
+  magma_sgemm(MagmaNoTrans, MagmaNoTrans, n - 1, k, k, 1.0f, dVS, n - 1, dW, k, 0.0f, dVSW, n - 1, queue);
+  magma_sgemm(MagmaNoTrans, MagmaNoTrans, m, k, n - 1, 1.0f, dX + m, m, dVSW, n - 1, 0.0f, dPhi, m, queue);
   time += magma_sync_wtime(queue);
   if (phi) magma_sgetmatrix(m, k, dPhi, m, phi, m, queue);
 

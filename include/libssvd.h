@@ -35,7 +35,7 @@ diagonal of matrix \f$\Sigma\f$
 \param [out] v n x n matrix of right-singular values
 \return If non-zero, the function has failed
 */
-API int SVD(const float *x, int m, int n, int k, bool gpu, bool streaming,
+API int SVD(const float *x, int m, int n, bool gpu, bool streaming,
             float *sigma, float *v);
 
 /**
@@ -73,7 +73,7 @@ real(lambda[i+1]), (phi[:, i-1], -phi[:, i]) if real(lambda[i-1]) =
 real(lambda[i]), else (phi[:, i], 0)
 \return If non-zero, the function has failed
 */
-API int DMD(const float *x, int m, int n, int k, bool gpu, bool streaming,
+API int DMD(const float *x, int m, int n, bool gpu, bool streaming,
             float *lambda, float *phi);
 
 /**
