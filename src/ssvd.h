@@ -32,6 +32,7 @@ class SsvdMagma : public Ssvd {
  public:
   SsvdMagma(int m, int n, int k = 0, int n_full = 0);
   virtual ~SsvdMagma();
+  //HACK sigma must be n length, not k
   virtual int Run(const float *x, int n, bool stream, float *sigma, float *v,
                   double *elapsed = nullptr) override;
   magma_queue_t GetQueue() const { return queue; }
@@ -42,7 +43,7 @@ class SsvdMagma : public Ssvd {
   int m, n, k, n_full;
   magma_queue_t queue;
   magmaFloat_ptr dX, dXX, dXX_dV;
-  std::vector<float> wA, work, sigma_temp;
+  std::vector<float> wA, work;
   std::vector<int> iwork;
 };
 }
