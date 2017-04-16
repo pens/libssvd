@@ -42,8 +42,6 @@ int SsvdCpu::Run(const float *x, int x_n, bool stream, float *sigma, float *v, d
   return 0;
 }
 
-#include <iostream>
-
 SsvdMagma::SsvdMagma(int m, int n, int k, int n_full)
     : m(m), n(n), k(k), n_full(n_full), wA(n * n), sigma_temp(n) {
   magma_init();
