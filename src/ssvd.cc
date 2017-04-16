@@ -9,6 +9,17 @@ using namespace std;
 using namespace chrono;
 using namespace ssvd;
 
+void eig_to_svd(float* sigma, int s_n, float* v, int n, int k) {
+  //HACK s_n to allow for more than k singular values from MAGMA 
+  for (auto i = 0; i < s_n / 2; ++i)
+      swap(sigma[i], sigma[s_n - 1 - i]);
+  for (auto i = 0; i < k; ++i)
+      sigma[i] = sqrt(abs(sigma[i]));
+  for (auto i = 0; i < k / 2; ++i)
+      for (auto j = 0; j < n; ++j)
+          swap(v[i * n + j], v[(k - 1 - i) * n + j]);
+}
+
 SsvdCpu::SsvdCpu(int m, int n, int k)
     : m(m), n(n), k(k), xx(n * n), xx_temp(n * n), isuppz(2 * n) {}
 
@@ -28,13 +39,7 @@ int SsvdCpu::Run(const float *x, int x_n, bool stream, float *sigma, float *v, d
   int res = LAPACKE_ssyevr(LAPACK_COL_MAJOR, 'V', 'I', 'U', n, xx_temp.data(), n, 0.0f, 0.0f, n - k + 1, n, 0.0f, &eig_count, sigma, v, n, isuppz.data());
   if (res) return -1;
 
-  for (auto i = 0; i < k; ++i)
-      sigma[i] = sqrt(abs(sigma[i]));
-  for (auto i = 0; i < k / 2; ++i)
-      swap(sigma[i], sigma[k - 1 - i]);
-  for (auto i = 0; i < k / 2; ++i)
-      for (auto j = 0; j < n; ++j)
-          swap(v[i * n + j], v[(k - 1 - i) * n + j]);
+  eig_to_svd(sigma, k, v, n, k);
 
   if (elapsed)
     *elapsed = duration_cast<duration<double>>(high_resolution_clock::now() - start).count();
@@ -43,7 +48,7 @@ int SsvdCpu::Run(const float *x, int x_n, bool stream, float *sigma, float *v, d
 }
 
 SsvdMagma::SsvdMagma(int m, int n, int k, int n_full)
-    : m(m), n(n), k(k), n_full(n_full), wA(n * n), sigma_temp(n) {
+    : m(m), n(n), k(k), n_full(n_full), wA(n * n) {
   magma_init();
   magma_queue_create(0, &queue);
   if (n_full <= 0) this->n_full = n;
@@ -88,18 +93,16 @@ int SsvdMagma::Run(const float *x, int x_n, bool stream, float *sigma, float *v,
   magma_int_t info;
   int mout;
   time -= magma_sync_wtime(queue);
-  magma_ssyevdx_gpu(MagmaVec, MagmaRangeI, MagmaUpper, n, dXX_dV, n, 0.f, 0.f, n - k + 1, n, &mout, sigma_temp.data(), wA.data(), n, work.data(), work.size(), iwork.data(), iwork.size(), &info);
+  magma_ssyevdx_gpu(MagmaVec, MagmaRangeI, MagmaUpper, n, dXX_dV, n, 0.f, 0.f, n - k + 1, n, &mout, sigma, wA.data(), n, work.data(), work.size(), iwork.data(), iwork.size(), &info);
   time += magma_sync_wtime(queue);
   if (info) return -1;
 
   magma_sgetmatrix(n, k, dXX_dV + (n - k) * n, n, v, n, queue);
 
   auto time2 = high_resolution_clock::now();
-  for (auto i = 0; i < k; ++i)
-      sigma[i] = sqrt(abs(sigma_temp[n - 1 - i]));
-  for (auto i = 0; i < k / 2; ++i)
-    for (auto j = 0; j < n; ++j)
-        swap(v[i * n + j], v[(k - 1 - i) * n + j]);
+
+  eig_to_svd(sigma, n, v, n, k);
+
   time += duration_cast<duration<double>>(high_resolution_clock::now() - time2) .count();
 
   if (elapsed) *elapsed = time;

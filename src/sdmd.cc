@@ -65,7 +65,7 @@ SdmdMagma::SdmdMagma(int m, int n, int k)
       n(n),
       k(k),
       svd(m, n - 1, k, n),
-      sigma(k),
+      sigma(n - 1),
       v((n - 1) * k),
       w(k * k),
       lambda_real(k),
@@ -129,6 +129,7 @@ int SdmdMagma::Run(const float *x, int x_n, bool stream, float *lambda,
   magma_sgetmatrix(k, k, dA, k, a.data(), k, queue);
 
   time_cpu = high_resolution_clock::now();
+  //HACK MAGMA creates OpenMP warnings, will be CPU either way
   res = LAPACKE_sgeev(LAPACK_COL_MAJOR, 'N', 'V', k, a.data(), k, lambda_real.data(), lambda_imag.data(), nullptr, 1, w.data(), k);
   time += duration_cast<duration<double>>(high_resolution_clock::now() - time_cpu).count();
   if (res) return -1;
