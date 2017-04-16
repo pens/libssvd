@@ -33,12 +33,8 @@ int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
   if (res) return -1;
 
   auto start = high_resolution_clock::now();
-  if (!stream) {//TODO remove
-    cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, n - 1, n - 1, m, 1.0f, x, m, x + m, m, 0.0f, xy.data(), n - 1);
-  } else {
     memmove(xy.data(), svd.GetXX() + n - 1, (n - 1) * (n - 1 - 1) * sizeof(float));
     cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, n - 1, 1, m, 1.0f, x, m, x + m * (n - 1), m, 0.0f, xy.data() + (n - 1) * (n - 1 - 1), n - 1);
-  }
 
   for (auto i = 0; i < k; ++i) sigma_inv_mat[i * (k + 1)] = 1.0f / sigma[i];
 
