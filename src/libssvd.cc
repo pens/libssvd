@@ -32,7 +32,7 @@ int SVDUpdate(const float *x_new, int n_new, float *sigma, float *v) {
   return svd->Run(x_new, n_new, true, sigma, v, &last_time);
 }
 
-void SVDStop() { svd.release(); }
+void SVDStop() { svd.reset(); }
 
 int DMD(const float *x, int m, int n, bool gpu, bool streaming, float *lambda,
         float *phi) {
@@ -52,6 +52,6 @@ int DMDUpdate(const float *x_new, int n_new, float *lambda, float *phi) {
   return dmd->Run(x_new, n_new, true, lambda, phi, &last_time);
 }
 
-void DMDStop() { dmd.release(); }
+void DMDStop() { dmd.reset(); }
 
 void GetElapsed(double *time) { *time = last_time; }
