@@ -16,7 +16,7 @@ class Ssvd {
 
 class SsvdCpu : public Ssvd {
  public:
-  SsvdCpu(int m, int n, int k = 0);
+  SsvdCpu(int m, int n, int k);
   virtual ~SsvdCpu(){};
   virtual int Run(const float *x, int n, bool stream, float *sigma, float *v,
                   double *elapsed = nullptr) override;
@@ -30,7 +30,7 @@ class SsvdCpu : public Ssvd {
 
 class SsvdMagma : public Ssvd {
  public:
-  SsvdMagma(int m, int n, int k = 0, int n_full = 0);
+  SsvdMagma(int m, int n, int k, int n_full = 0);
   virtual ~SsvdMagma();
   //HACK sigma must be n length, not k
   virtual int Run(const float *x, int n, bool stream, float *sigma, float *v,
