@@ -12,7 +12,7 @@ using namespace ssvd;
 SdmdCpu::SdmdCpu(int m, int n, int k)
     : m(m),
       n(n),
-      k(k),
+      k(k > 0 ? k : n),
       svd(m, n - 1, k),
       sigma(k),
       v((n - 1) * k),
@@ -63,7 +63,7 @@ int SdmdCpu::Run(const float *x, int x_n, bool stream, float *lambda,
 SdmdMagma::SdmdMagma(int m, int n, int k)
     : m(m),
       n(n),
-      k(k),
+      k(k > 0 ? k : n),
       svd(m, n - 1, k, n),
       sigma(n - 1),
       v((n - 1) * k),

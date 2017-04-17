@@ -21,7 +21,7 @@ void eig_to_svd(float* sigma, int s_n, float* v, int n, int k) {
 }
 
 SsvdCpu::SsvdCpu(int m, int n, int k)
-    : m(m), n(n), k(k), xx(n * n), xx_temp(n * n), isuppz(2 * n) {}
+    : m(m), n(n), k(k > 0 ? k : n), xx(n * n), xx_temp(n * n), isuppz(2 * n) {}
 
 int SsvdCpu::Run(const float *x, int x_n, bool stream, float *sigma, float *v, double *elapsed) {
   auto start = high_resolution_clock::now();
@@ -48,7 +48,7 @@ int SsvdCpu::Run(const float *x, int x_n, bool stream, float *sigma, float *v, d
 }
 
 SsvdMagma::SsvdMagma(int m, int n, int k, int n_full)
-    : m(m), n(n), k(k), n_full(n_full), wA(n * n) {
+    : m(m), n(n), k(k > 0 ? k : n), n_full(n_full), wA(n * n) {
   magma_init();
   magma_queue_create(0, &queue);
   if (n_full <= 0) this->n_full = n;
