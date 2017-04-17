@@ -15,7 +15,7 @@ class Sdmd {
 
 class SdmdCpu : public Sdmd {
  public:
-  SdmdCpu(int m, int n, int k = 0);
+  SdmdCpu(int m, int n, int k);
   virtual ~SdmdCpu(){};
   virtual int Run(const float *x, int n, bool stream, float *lambda, float *phi,
                   double *elapsed) override;
@@ -32,7 +32,7 @@ class SdmdCpu : public Sdmd {
 
 class SdmdMagma : public Sdmd {
  public:
-  SdmdMagma(int m, int n, int k = 0);
+  SdmdMagma(int m, int n, int k);
   virtual ~SdmdMagma();
   virtual int Run(const float *x, int n, bool stream, float *lambda, float *phi,
                   double *elapsed) override;

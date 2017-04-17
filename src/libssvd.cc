@@ -17,13 +17,13 @@ double last_time;
 int SVD(const float *x, int m, int n, bool gpu, bool streaming, float *sigma,
         float *v) {
   if (gpu)
-    svd = make_unique<SsvdMagma>(m, n);
+    svd = make_unique<SsvdMagma>(m, n, n);
   else
-    svd = make_unique<SsvdCpu>(m, n);
+    svd = make_unique<SsvdCpu>(m, n, n);
 
   int res = svd->Run(x, n, false, sigma, v, &last_time);
 
-  if (res || !streaming) svd.release();
+  if (res || !streaming) svd.reset();
 
   return res;
 }
@@ -37,13 +37,13 @@ void SVDStop() { svd.release(); }
 int DMD(const float *x, int m, int n, bool gpu, bool streaming, float *lambda,
         float *phi) {
   if (gpu)
-    dmd = make_unique<SdmdMagma>(m, n);
+    dmd = make_unique<SdmdMagma>(m, n, n - 1);
   else
-    dmd = make_unique<SdmdCpu>(m, n);
+    dmd = make_unique<SdmdCpu>(m, n, n - 1);
 
   int res = dmd->Run(x, n, false, lambda, phi, &last_time);
 
-  if (res || !streaming) dmd.release();
+  if (res || !streaming) dmd.reset();
 
   return res;
 }
