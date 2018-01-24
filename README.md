@@ -6,7 +6,7 @@ libssvd was created as part of [*Streaming GPU Singular Value and Dynamic Mode D
 ## Dependencies
 - MAGMA (http://icl.cs.utk.edu/magma/software/) \*
 - CUDA
-- BLAS \*
+- BLAS, LAPACK, LAPACKE \*
 - Doxygen (if building documentation)
 
 \* Included for Windows
