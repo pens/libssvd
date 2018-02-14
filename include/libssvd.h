@@ -24,6 +24,7 @@ extern "C" {
 /**
 Calculate the (partial) Singular Value Decomposition of X:
 \f$X=U\Sigma V^*\f$
+Note: all matrices are column-major (Fortran style)
 \param [in] x m x n input matrix
 \param [in] m Rows in x
 \param [in] n Columns in x
@@ -58,6 +59,7 @@ API void SVDStop();
 /**
 Calculate the Dynamic Mode Decomposition of X:
 \f$X\rightarrow\Phi,\Lambda\f$
+Note: all matrices are column-major (Fortran style)
 \param [in] x m x n input matrix
 \param [in] m Rows in x
 \param [in] n Columns in x
