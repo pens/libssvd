@@ -1,4 +1,4 @@
-
+# Copyright 2020 Seth Pendergrass. See LICENSE.
 from mayavi import mlab
 
 x = scipy.io.loadmat(INPUT_DIR + '/CYLINDER_ALL.mat')['VORTALL'].astype(np.float32)

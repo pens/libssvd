@@ -1,3 +1,7 @@
+/*
+ * Copyright 2016-20 Seth Pendergrass. See LICENSE.
+ */
+
 #pragma once
 #include "common.h"
 #include <vector>

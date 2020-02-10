@@ -1,3 +1,4 @@
+# Copyright 2020 Seth Pendergrass. See LICENSE.
 # %% Setup
 import os
 import ctypes

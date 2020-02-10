@@ -1,3 +1,7 @@
+/*
+ * Copyright 2016-20 Seth Pendergrass. See LICENSE.
+ */
+
 #include "dmd.h"
 #include <algorithm>
 #include <cblas.h>

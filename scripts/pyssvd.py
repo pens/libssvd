@@ -1,3 +1,4 @@
+# Copyright 2020 Seth Pendergrass. See LICENSE.
 import matplotlib.pyplot as plt
 import numpy as np
 import ctypes

@@ -1,3 +1,7 @@
+/*
+ * Copyright 2016-20 Seth Pendergrass. See LICENSE.
+ */
+
 #include "svd.h"
 #include <algorithm>
 #include <cblas.h>
