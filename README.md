@@ -4,15 +4,9 @@ libssvd is an open-source package providing the Streaming Singular Value Decompo
 libssvd was created as part of [*Streaming GPU Singular Value and Dynamic Mode Decompositions*](https://arxiv.org/abs/1612.07875).
 
 ## Dependencies
-- MAGMA (http://icl.cs.utk.edu/magma/software/) \*
+- MAGMA (http://icl.cs.utk.edu/magma/software/)
 - CUDA
-- BLAS + LAPACK \*
-- Doxygen (if building documentation)
+- BLAS + LAPACK
 
-\* Included for Windows
+See https://rgb.sh/magma.
 
-## Style
-Style is enforced through clang-format: `clang-format -style=file -i include/* src/*`
-
-## Documentation
-To build documentation: `doxygen`
