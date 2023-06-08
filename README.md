@@ -8,5 +8,5 @@ libssvd was created as part of [*Streaming GPU Singular Value and Dynamic Mode D
 - CUDA
 - BLAS + LAPACK
 
-See https://rgb.sh/magma.
+See https://rgb.sh/blog/magma.
 
